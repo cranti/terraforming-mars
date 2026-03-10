@@ -1,5 +1,5 @@
 # Intermediate image - base for building and installing dependencies
-FROM node:16.13.2-alpine3.15 AS install
+FROM node:22-alpine AS install
 
 # Install required tools
 RUN apk add --no-cache --virtual .gyp git python3 make g++ \
@@ -31,7 +31,7 @@ RUN npm ci --production --prefer-offline
 
 
 # Target image
-FROM node:16.13.2-alpine3.15
+FROM node:22-alpine
 
 WORKDIR /usr/src/app
 

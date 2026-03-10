@@ -99,6 +99,9 @@
           </div>
           <div class="text-overview" v-i18n>[ toggle cards in hand ]</div>
         </div>
+        <div v-if="isVisible('HAND') && playerView.players.length > 1 && !isPlayerActing(playerView)" class="general-warning" v-i18n>
+          Card eligibility may be out of date until your turn begins.
+        </div>
         <sortable-cards v-show="isVisible('HAND')" :playerId="playerView.id"
                         :cards="playerView.preludeCardsInHand
                                 .concat(playerView.ceoCardsInHand)

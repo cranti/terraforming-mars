@@ -92,8 +92,13 @@ export class Server {
     const thisPlayerIndex = players.findIndex((p) => p.color === player.color);
     const thisPlayer: PublicPlayerModel = players[thisPlayerIndex];
 
+    const playableCardNames = new Set(player.getPlayableCards().map((c) => c.name));
+
     const rv: PlayerViewModel = {
-      cardsInHand: cardsToModel(player, player.cardsInHand, {showCalculatedCost: true}),
+      cardsInHand: cardsToModel(player, player.cardsInHand, {
+        showCalculatedCost: true,
+        enabled: player.cardsInHand.map((c) => playableCardNames.has(c.name)),
+      }),
       ceoCardsInHand: cardsToModel(player, Array.from(player.ceoCardsInHand)),
       dealtCorporationCards: cardsToModel(player, player.dealtCorporationCards),
       dealtPreludeCards: cardsToModel(player, player.dealtPreludeCards),

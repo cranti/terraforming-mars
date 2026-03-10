@@ -81,8 +81,11 @@ export default defineComponent({
     },
     spaceClicked(spaceId: SpaceId) {
       const id = isMarsSpace(spaceId) ? 'shortkey-board' : 'shortkey-moonBoard';
-      const el = document.getElementById(id);
-      el?.scrollIntoView({block: 'center', inline: 'center', behavior: 'auto'});
+      document.dispatchEvent(new CustomEvent('tm-goto-board'));
+      this.$nextTick(() => {
+        const el = document.getElementById(id);
+        el?.scrollIntoView({block: 'center', inline: 'center', behavior: 'auto'});
+      });
 
       const regions = ['main_board', 'moon_board', 'moon_board_outer_spaces'];
       for (const region of regions) {

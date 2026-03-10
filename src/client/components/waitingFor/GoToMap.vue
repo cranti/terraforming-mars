@@ -19,12 +19,13 @@ export default defineComponent({
   },
   methods: {
     onclick(event: MouseEvent) {
+      event.preventDefault();
       const id = isMarsSpace(this.playerinput.spaces?.[0] ?? '00') ? 'shortkey-board' : 'shortkey-moonBoard';
-      const el = document.getElementById(id);
-      if (el) {
-        event.preventDefault();
-        el.scrollIntoView({block: 'center', inline: 'center', behavior: 'auto'});
-      }
+      document.dispatchEvent(new CustomEvent('tm-goto-board'));
+      this.$nextTick(() => {
+        const el = document.getElementById(id);
+        el?.scrollIntoView({block: 'center', inline: 'center', behavior: 'auto'});
+      });
     },
   },
 });

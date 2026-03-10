@@ -178,7 +178,7 @@
 
       <!-- BOTTOM TAB NAV -->
       <nav class="bottom-tab-nav">
-        <button v-on:click="activeTab = 'play'" :class="{active: activeTab === 'play'}" v-i18n>Play</button>
+        <button v-on:click="activeTab = 'play'" :class="{active: activeTab === 'play', 'needs-action': playerView.waitingFor !== undefined}" v-i18n>Play</button>
         <button v-on:click="activeTab = 'board'" :class="{active: activeTab === 'board'}" v-i18n>Board</button>
         <button v-on:click="activeTab = 'players'" :class="{active: activeTab === 'players'}" v-i18n>All Players</button>
       </nav>

@@ -276,6 +276,15 @@
           <MoonBoard v-if="game.moon !== undefined" :model="game.moon" :tileView="tileView"></MoonBoard>
         </div>
       </details>
+
+      <div v-if="game.colonies.length > 0" class="player_home_block">
+        <dynamic-title title="Colonies" :color="thisPlayer.color"/>
+        <div class="player_home_colony_cont">
+          <div class="player_home_colony" v-for="colony in game.colonies" :key="colony.name">
+            <colony :colony="colony" :active="colony.isActive"></colony>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div v-if="game.spectatorId && (activeTab === 'board' || thisPlayer.tableau.length === 0)">

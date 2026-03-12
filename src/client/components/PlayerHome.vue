@@ -27,7 +27,7 @@
       :discardPileSize = "game.discardPileSize">
     </sidebar>
 
-    <div v-if="thisPlayer.tableau.length > 0">
+    <div v-if="!isInSetupPhase">
 
       <!-- BOARD TAB -->
       <div v-show="activeTab === 'board'" class="player_home_block">
@@ -184,8 +184,8 @@
       </nav>
     </div>
 
-    <div class="player_home_block player_home_block--setup nofloat"  v-if="thisPlayer.tableau.length === 0">
-      <template v-if="isInitialDraftingPhase()">
+    <div class="player_home_block player_home_block--setup nofloat"  v-if="isInSetupPhase">
+      <template v-if="isInitialDraftingPhase">
         <div v-for="card in playerView.dealtCorporationCards" :key="card.name" class="cardbox">
           <Card :card="card"/>
         </div>
@@ -287,10 +287,10 @@
       </div>
     </div>
 
-    <div v-if="game.spectatorId && (activeTab === 'board' || thisPlayer.tableau.length === 0)">
+    <div v-if="game.spectatorId && (activeTab === 'board' || isInSetupPhase)">
       <a :href="'/spectator?id=' +game.spectatorId" target="_blank" rel="noopener noreferrer" v-i18n>Spectator link</a>
     </div>
-    <purge-warning v-show="activeTab === 'board' || thisPlayer.tableau.length === 0" :expectedPurgeTimeMs="playerView.game.expectedPurgeTimeMs"></purge-warning>
+    <purge-warning v-show="activeTab === 'board' || isInSetupPhase" :expectedPurgeTimeMs="playerView.game.expectedPurgeTimeMs"></purge-warning>
     <KeyboardShortcuts v-show="keyboardShortcutOpened" @close="keyboardShortcutOpened = false"></KeyboardShortcuts>
   </div>
 </template>
@@ -411,6 +411,12 @@ export default defineComponent({
     sortActiveCards(): typeof sortActiveCards {
       return sortActiveCards;
     },
+    isInSetupPhase(): boolean {
+      return this.thisPlayer.tableau.length === 0;
+    },
+    isInitialDraftingPhase(): boolean {
+      return (this.game.phase === Phase.INITIALDRAFTING) && this.game.gameOptions.initialDraftVariant;
+    },
   },
 
   components: {
@@ -528,9 +534,6 @@ export default defineComponent({
         return this.showEventCards;
       }
       return false;
-    },
-    isInitialDraftingPhase(): boolean {
-      return (this.game.phase === Phase.INITIALDRAFTING) && this.game.gameOptions.initialDraftVariant;
     },
     getToggleLabel(hideType: string): string {
       if (hideType === 'HAND') {

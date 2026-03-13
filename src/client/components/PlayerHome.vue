@@ -29,8 +29,8 @@
 
     <div v-if="!isInSetupPhase">
 
-      <!-- BOARD TAB -->
-      <div v-show="activeTab === 'board'" class="player_home_block">
+      <!-- BOARD SECTION -->
+      <div id="section-board" class="player_home_block">
         <a name="board" class="player_home_anchor hotkey-target"></a>
         <board
           :spaces="game.spaces"
@@ -84,17 +84,17 @@
         </div>
       </div>
 
-      <!-- PLAYERS TAB -->
-      <div v-show="activeTab === 'players'">
+      <!-- PLAYERS SECTION -->
+      <div id="section-players">
         <a class="hotkey-target"></a>
         <players-overview class="player_home_block player_home_block--players nofloat" :playerView="playerView" v-trim-whitespace id="shortkey-playersoverview"/>
-        <div class="player_home_block nofloat">
+        <div id="section-log" class="player_home_block nofloat">
           <log-panel :viewModel="playerView" :color="thisPlayer.color" :step="game.step"></log-panel>
         </div>
       </div>
 
-      <!-- PLAY TAB (actions + hand + tableau) -->
-      <div v-show="activeTab === 'play'">
+      <!-- PLAY SECTION (actions + hand + tableau) -->
+      <div id="section-play">
         <div class="player_home_block player_home_block--actions nofloat">
           <a name="actions" class="player_home_anchor"></a>
           <dynamic-title title="Actions" :color="thisPlayer.color"/>
@@ -176,11 +176,12 @@
         </div>
       </div>
 
-      <!-- BOTTOM TAB NAV -->
+      <!-- BOTTOM SHORTCUT NAV -->
       <nav class="bottom-tab-nav">
-        <button v-on:click="activeTab = 'play'" :class="{active: activeTab === 'play', 'needs-action': playerView.waitingFor !== undefined}" v-i18n>Play</button>
-        <button v-on:click="activeTab = 'board'" :class="{active: activeTab === 'board'}" v-i18n>Board</button>
-        <button v-on:click="activeTab = 'players'" :class="{active: activeTab === 'players'}" v-i18n>All Players</button>
+        <button v-on:click="scrollTo('section-board')" v-i18n>Board</button>
+        <button v-on:click="scrollTo('section-players')" v-i18n>All Players</button>
+        <button v-on:click="scrollTo('section-log')" v-i18n>Log</button>
+        <button v-on:click="scrollTo('section-play')" :class="{'needs-action': playerView.waitingFor !== undefined}" v-i18n>Play</button>
       </nav>
     </div>
 
@@ -332,8 +333,6 @@ import {CardModel} from '@/common/models/CardModel';
 import {getCardOrThrow} from '../cards/ClientCardManifest';
 import {APP_NAME} from '@/common/constants';
 
-type Tab = 'board' | 'players' | 'play';
-
 export interface PlayerHomeModel {
   showHand: boolean;
   showActiveCards: boolean;
@@ -342,7 +341,6 @@ export interface PlayerHomeModel {
   tileView: TileView;
   keyboardShortcutOpened: boolean;
   hotkeyTargets: Array<Element>;
-  activeTab: Tab;
 }
 
 class TerraformedAlertDialog {
@@ -353,7 +351,6 @@ export default defineComponent({
   name: 'player-home',
   data(): PlayerHomeModel {
     const preferences = getPreferences();
-    const savedTab = sessionStorage.getItem('activeTab') as Tab | null;
     return {
       showHand: !preferences.hide_hand,
       showActiveCards: !preferences.hide_active_cards,
@@ -362,13 +359,9 @@ export default defineComponent({
       tileView: 'show',
       keyboardShortcutOpened: false,
       hotkeyTargets: [],
-      activeTab: (savedTab ?? 'play') as Tab,
     };
   },
   watch: {
-    activeTab(newTab: Tab) {
-      sessionStorage.setItem('activeTab', newTab);
-    },
     showHand: function hide_hand() {
       PreferencesManager.INSTANCE.set('hide_hand', !this.showHand);
     },
@@ -445,8 +438,12 @@ export default defineComponent({
     KeyboardShortcuts,
   },
   methods: {
+    scrollTo(id: string): void {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({behavior: 'smooth', block: 'start'});
+    },
     gotoBoard() {
-      this.activeTab = 'board';
+      this.scrollTo('section-board');
     },
     navigatePage(event: KeyboardEvent) {
       // Most '?' are shifted, so process this before the action that exits early with modifiers
@@ -457,19 +454,19 @@ export default defineComponent({
       if (event.shiftKey || event.ctrlKey || event.metaKey || event.altKey) {
         return;
       }
-      const tabKeys: Partial<Record<string, Tab>> = {
-        [KeyboardNavigation.GAMEBOARD]: 'board',
-        [KeyboardNavigation.PLAYERSOVERVIEW]: 'players',
-        [KeyboardNavigation.HAND]: 'play',
-        [KeyboardNavigation.COLONIES]: 'board',
+      const sectionKeys: Partial<Record<string, string>> = {
+        [KeyboardNavigation.GAMEBOARD]: 'section-board',
+        [KeyboardNavigation.PLAYERSOVERVIEW]: 'section-players',
+        [KeyboardNavigation.HAND]: 'section-play',
+        [KeyboardNavigation.COLONIES]: 'section-board',
       };
       const inputSource = event.target as Node;
       console.log(inputSource.nodeName);
       if (inputSource.nodeName.toLowerCase() !== 'input') {
-        const tab = tabKeys[event.code];
-        if (tab) {
+        const section = sectionKeys[event.code];
+        if (section) {
           event.preventDefault();
-          this.activeTab = tab;
+          this.scrollTo(section);
         } else if (event.code.startsWith('Digit')) {
           const ASCII_ONE = '1'.charCodeAt(0);
           const index = event.code.charCodeAt(5) - ASCII_ONE;

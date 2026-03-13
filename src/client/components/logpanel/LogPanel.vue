@@ -45,6 +45,7 @@ type LogPanelModel = {
   messages: Array<LogMessage>,
   selectedGeneration: number,
   selectedMessage: LogMessage | undefined,
+  pendingScroll: boolean,
 };
 
 export default defineComponent({
@@ -69,6 +70,7 @@ export default defineComponent({
       messages: [],
       selectedGeneration: -1,
       selectedMessage: undefined,
+      pendingScroll: false,
     };
   },
   components: {
@@ -150,7 +152,12 @@ export default defineComponent({
     scrollToEnd() {
       const scrollablePanel = document.getElementById('logpanel-scrollable');
       if (scrollablePanel !== null) {
-        scrollablePanel.scrollTop = scrollablePanel.scrollHeight;
+        if (scrollablePanel.scrollHeight > 0) {
+          scrollablePanel.scrollTop = scrollablePanel.scrollHeight;
+          this.pendingScroll = false;
+        } else {
+          this.pendingScroll = true;
+        }
       }
     },
     getClassesGenIndicator(gen: number): string {
@@ -193,6 +200,16 @@ export default defineComponent({
   mounted() {
     this.selectedGeneration = this.generation;
     this.getLogsForGeneration(this.generation);
+
+    const scrollablePanel = document.getElementById('logpanel-scrollable');
+    if (scrollablePanel !== null) {
+      const observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && this.pendingScroll) {
+          this.scrollToEnd();
+        }
+      });
+      observer.observe(scrollablePanel);
+    }
   },
 });
 

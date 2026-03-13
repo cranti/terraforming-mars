@@ -353,6 +353,7 @@ export default defineComponent({
   name: 'player-home',
   data(): PlayerHomeModel {
     const preferences = getPreferences();
+    const savedTab = sessionStorage.getItem('activeTab') as Tab | null;
     return {
       showHand: !preferences.hide_hand,
       showActiveCards: !preferences.hide_active_cards,
@@ -361,10 +362,13 @@ export default defineComponent({
       tileView: 'show',
       keyboardShortcutOpened: false,
       hotkeyTargets: [],
-      activeTab: 'play' as Tab,
+      activeTab: (savedTab ?? 'play') as Tab,
     };
   },
   watch: {
+    activeTab(newTab: Tab) {
+      sessionStorage.setItem('activeTab', newTab);
+    },
     showHand: function hide_hand() {
       PreferencesManager.INSTANCE.set('hide_hand', !this.showHand);
     },
